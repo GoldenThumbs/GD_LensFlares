@@ -1,0 +1,36 @@
+[gd_scene load_steps=7 format=3 uid="uid://7qh8j4068sfr"]
+
+[ext_resource type="Shader" path="res://addons/lensflares/src/shaders/flare.gdshader" id="1_xw7j8"]
+[ext_resource type="Shader" path="res://addons/lensflares/src/shaders/flare_particle.gdshader" id="2_hc5vf"]
+
+[sub_resource type="Texture2DArray" id="Texture2DArray_522y3"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bsrag"]
+render_priority = 0
+shader = ExtResource("1_xw7j8")
+shader_parameter/spacing = 0.5
+shader_parameter/sprite = SubResource("Texture2DArray_522y3")
+
+[sub_resource type="QuadMesh" id="QuadMesh_3qw2f"]
+material = SubResource("ShaderMaterial_bsrag")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cwynf"]
+shader = ExtResource("2_hc5vf")
+
+[node name="Node3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("QuadMesh_3qw2f")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.13443, 1.27466, 1.9297)
+amount = 4
+lifetime = 20.0
+explosiveness = 1.0
+fixed_fps = 1
+interpolate = false
+fract_delta = false
+local_coords = true
+process_material = SubResource("ShaderMaterial_cwynf")
+draw_pass_1 = SubResource("QuadMesh_3qw2f")
