@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="FlareSettings" load_steps=7 format=3 uid="uid://g07exuu3no3u"]
+
+[ext_resource type="QuadMesh" uid="uid://bb72fpae7c3ul" path="res://addons/lensflares/assets/quad.tres" id="1_oev2m"]
+[ext_resource type="Script" path="res://addons/lensflares/src/flare_segment.gd" id="2_n7enj"]
+[ext_resource type="Texture2D" uid="uid://b7nwkwhryxsv1" path="res://addons/lensflares/assets/lensflares_0.png" id="3_4y3my"]
+[ext_resource type="Script" path="res://addons/lensflares/src/flare_settings.gd" id="4_s7m3b"]
+
+[sub_resource type="Resource" id="Resource_nqlgv"]
+script = ExtResource("2_n7enj")
+rect = Rect2(0, 0, 512, 512)
+focal_fade = true
+scale = 1.0
+offset = 0.0
+rotate = false
+
+[sub_resource type="Resource" id="Resource_6w8xj"]
+script = ExtResource("2_n7enj")
+rect = Rect2(0, 512, 256, 256)
+focal_fade = true
+scale = 1.0
+offset = 0.0
+rotate = false
+
+[resource]
+script = ExtResource("4_s7m3b")
+flare_tex = ExtResource("3_4y3my")
+flare_mesh = ExtResource("1_oev2m")
+flare_segments = Array[ExtResource("2_n7enj")]([SubResource("Resource_nqlgv"), SubResource("Resource_6w8xj")])

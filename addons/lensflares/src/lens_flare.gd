@@ -1,30 +1,57 @@
 @tool
 class_name LensFlare
-extends Node3D
+extends MultiMeshInstance3D
 
-@export var flare_properties : FlareProperties
-@export var flare_spacing : float = 0.2
-@export var flare_scale : float = 1.0
-@export var flare_distance_scale := false
+@export var flare_spacing : float = 0.5
+@export var flare_settings : FlareSettings :
+	set (value):
+		flare_settings = value
+		if (flare_settings):
+			multimesh = _create_flare_multimesh()
+		else:
+			multimesh = null
+	get:
+		return flare_settings
 
-var _flare_capture : LensFlareCapture
+var _flare_mat := preload("res://addons/lensflares/assets/flare.material").duplicate() as ShaderMaterial
 
-func _enter_tree() -> void:
-	_flare_capture = get_tree().get_first_node_in_group("flare_capture") as LensFlareCapture
-
-func _exit_tree() -> void:
-	_flare_capture = null
+func _create_flare_multimesh() -> MultiMesh:
+	var m_mesh := MultiMesh.new()
+	
+	m_mesh.use_custom_data = true
+	m_mesh.use_colors = true
+	m_mesh.transform_format = MultiMesh.TRANSFORM_3D
+	
+	if (!flare_settings || !flare_settings.flare_mesh):
+		return m_mesh
+	
+	m_mesh.mesh = flare_settings.flare_mesh
+	m_mesh.instance_count = flare_settings.flare_segments.size()
+	
+	var tex_res := Vector2.ONE
+	if (flare_settings.flare_tex):
+		tex_res = flare_settings.flare_tex.get_size()
+		_flare_mat.set_shader_parameter("sprite", flare_settings.flare_tex)
+	
+	_flare_mat.set_shader_parameter("spacing", flare_spacing)
+	
+	for i in m_mesh.instance_count:
+		var f_seg := flare_settings.flare_segments[i]
+		
+		m_mesh.set_instance_custom_data(i, Color(float(f_seg.focal_fade), f_seg.offset, float(f_seg.rotate)))
+		
+		var uv_offset := f_seg.rect.position / tex_res
+		var uv_scale := f_seg.rect.size / tex_res
+		m_mesh.set_instance_color(i, Color(uv_offset.x, uv_offset.y, uv_scale.x, uv_scale.y))
+		
+		m_mesh.set_instance_transform(i, Transform3D.IDENTITY.scaled(Vector3(f_seg.scale, f_seg.scale, f_seg.scale)))
+		
+	
+	if (m_mesh.mesh.get_surface_count() > 0):
+		m_mesh.mesh.surface_set_material(0, _flare_mat)
+	
+	return m_mesh
 
 func _ready() -> void:
-	if (_flare_capture && visible):
-		_flare_capture.add_flare(self)
-
-func show() -> void:
-	super()
-	if (_flare_capture):
-		_flare_capture.add_flare(self)
-
-func hide() -> void:
-	super()
-	if (_flare_capture):
-		_flare_capture.remove_flare(self)
+	if (flare_settings):
+			multimesh = _create_flare_multimesh()

@@ -1,36 +1,28 @@
 [gd_scene load_steps=7 format=3 uid="uid://7qh8j4068sfr"]
 
-[ext_resource type="Shader" path="res://addons/lensflares/src/shaders/flare.gdshader" id="1_xw7j8"]
-[ext_resource type="Shader" path="res://addons/lensflares/src/shaders/flare_particle.gdshader" id="2_hc5vf"]
+[ext_resource type="Script" path="res://addons/lensflares/src/lens_flare.gd" id="1_la1sq"]
+[ext_resource type="QuadMesh" uid="uid://bb72fpae7c3ul" path="res://addons/lensflares/assets/quad.tres" id="2_epfj4"]
+[ext_resource type="Resource" uid="uid://g07exuu3no3u" path="res://addons/lensflares/assets/test_flare.tres" id="2_x8jps"]
+[ext_resource type="Material" uid="uid://bflgqax5iebaj" path="res://addons/lensflares/assets/flare.material" id="3_8fahw"]
 
-[sub_resource type="Texture2DArray" id="Texture2DArray_522y3"]
+[sub_resource type="MultiMesh" id="MultiMesh_hiybj"]
+transform_format = 1
+use_colors = true
+use_custom_data = true
+instance_count = 2
+mesh = ExtResource("2_epfj4")
+buffer = PackedFloat32Array(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.5, 0.5, 0.25, 1, 0, 0, 1)
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_bsrag"]
-render_priority = 0
-shader = ExtResource("1_xw7j8")
-shader_parameter/spacing = 0.5
-shader_parameter/sprite = SubResource("Texture2DArray_522y3")
-
-[sub_resource type="QuadMesh" id="QuadMesh_3qw2f"]
-material = SubResource("ShaderMaterial_bsrag")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_cwynf"]
-shader = ExtResource("2_hc5vf")
+[sub_resource type="QuadMesh" id="QuadMesh_bg0cx"]
 
 [node name="Node3D" type="Node3D"]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-visible = false
-mesh = SubResource("QuadMesh_3qw2f")
+[node name="LensFlare" type="MultiMeshInstance3D" parent="."]
+multimesh = SubResource("MultiMesh_hiybj")
+script = ExtResource("1_la1sq")
+flare_settings = ExtResource("2_x8jps")
 
-[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.13443, 1.27466, 1.9297)
-amount = 4
-lifetime = 20.0
-explosiveness = 1.0
-fixed_fps = 1
-interpolate = false
-fract_delta = false
-local_coords = true
-process_material = SubResource("ShaderMaterial_cwynf")
-draw_pass_1 = SubResource("QuadMesh_3qw2f")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+material_override = ExtResource("3_8fahw")
+mesh = SubResource("QuadMesh_bg0cx")
