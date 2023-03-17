@@ -1,57 +1,73 @@
 @tool
 class_name LensFlare
-extends MultiMeshInstance3D
+extends VisibleOnScreenNotifier3D
 
-@export var flare_spacing : float = 0.5
-@export var flare_settings : FlareSettings :
-	set (value):
-		flare_settings = value
-		if (flare_settings):
-			multimesh = _create_flare_multimesh()
+@export var flare_multimesh : MultiMesh :
+	set(value):
+		flare_multimesh = value
+		if (is_inside_tree()):
+			if (flare_multimesh && _mmesh_inst.is_valid()):
+				RenderingServer.instance_set_base(_mmesh_inst, flare_multimesh.get_rid())
+			_set_up_drawing()
+
+var _vis_data := LensFlareVis.new()
+var _mmesh_inst : RID
+
+func _enter_tree() -> void:
+	_vis_data.vis_data_calc(self)
+	_set_up_drawing()
+
+func _exit_tree() -> void:
+	if (_mmesh_inst.is_valid()):
+		RenderingServer.free_rid(_mmesh_inst)
+
+func _process(delta: float) -> void:
+	var new_vis_data := LensFlareVis.new()
+	new_vis_data.vis_data_calc(self)
+	
+	if (new_vis_data.is_visible):
+		if (!_vis_data.is_visible || _vis_data.fade_val < 1.0):
+			new_vis_data.vis_mode = LensFlareVis.VisMode.FADING_IN
+			if (new_vis_data.vis_mode != _vis_data.vis_mode && _mmesh_inst.is_valid()):
+				RenderingServer.instance_set_visible(_mmesh_inst, true)
+			new_vis_data.fade_val = move_toward(_vis_data.fade_val, 1.0, delta * 4.0)
+	else:
+		if (_vis_data.is_visible || _vis_data.fade_val > 0.0):
+			new_vis_data.vis_mode = LensFlareVis.VisMode.FADING_OUT
+			new_vis_data.fade_val = move_toward(_vis_data.fade_val, 0.0, delta * 4.0)
+		elif (_mmesh_inst.is_valid()):
+			RenderingServer.instance_set_visible(_mmesh_inst, false)
+	if (_mmesh_inst.is_valid()):
+		RenderingServer.instance_set_transform(_mmesh_inst, global_transform)
+		RenderingServer.instance_geometry_set_transparency(_mmesh_inst, 1.0 - new_vis_data.fade_val)
+	_vis_data = new_vis_data
+
+func _set_up_drawing() -> void:
+	if (!_mmesh_inst.is_valid()):
+		_mmesh_inst = RenderingServer.instance_create()
+		if (flare_multimesh):
+			RenderingServer.instance_set_base(_mmesh_inst, flare_multimesh.get_rid())
+		RenderingServer.instance_set_ignore_culling(_mmesh_inst, true)
+		RenderingServer.instance_set_scenario(_mmesh_inst, get_world_3d().scenario)
+		RenderingServer.instance_set_transform(_mmesh_inst, global_transform)
+
+class LensFlareVis extends RefCounted:
+	enum VisMode {
+		NOT_VISIBLE = 0,
+		IS_VISIBLE,
+		FADING_IN,
+		FADING_OUT
+	}
+	
+	var is_visible := false
+	var vis_mode := VisMode.NOT_VISIBLE
+	var fade_val := 1.0
+	
+	func vis_data_calc(flare : LensFlare) -> void:
+		is_visible = flare.is_on_screen()
+		fade_val = float(is_visible)
+		
+		if (is_visible):
+			vis_mode = VisMode.IS_VISIBLE
 		else:
-			multimesh = null
-	get:
-		return flare_settings
-
-var _flare_mat := preload("res://addons/lensflares/assets/flare.material").duplicate() as ShaderMaterial
-
-func _create_flare_multimesh() -> MultiMesh:
-	var m_mesh := MultiMesh.new()
-	
-	m_mesh.use_custom_data = true
-	m_mesh.use_colors = true
-	m_mesh.transform_format = MultiMesh.TRANSFORM_3D
-	
-	if (!flare_settings || !flare_settings.flare_mesh):
-		return m_mesh
-	
-	m_mesh.mesh = flare_settings.flare_mesh
-	m_mesh.instance_count = flare_settings.flare_segments.size()
-	
-	var tex_res := Vector2.ONE
-	if (flare_settings.flare_tex):
-		tex_res = flare_settings.flare_tex.get_size()
-		_flare_mat.set_shader_parameter("sprite", flare_settings.flare_tex)
-	
-	_flare_mat.set_shader_parameter("spacing", flare_spacing)
-	
-	for i in m_mesh.instance_count:
-		var f_seg := flare_settings.flare_segments[i]
-		
-		m_mesh.set_instance_custom_data(i, Color(float(f_seg.focal_fade), f_seg.offset, float(f_seg.rotate)))
-		
-		var uv_offset := f_seg.rect.position / tex_res
-		var uv_scale := f_seg.rect.size / tex_res
-		m_mesh.set_instance_color(i, Color(uv_offset.x, uv_offset.y, uv_scale.x, uv_scale.y))
-		
-		m_mesh.set_instance_transform(i, Transform3D.IDENTITY.scaled(Vector3(f_seg.scale, f_seg.scale, f_seg.scale)))
-		
-	
-	if (m_mesh.mesh.get_surface_count() > 0):
-		m_mesh.mesh.surface_set_material(0, _flare_mat)
-	
-	return m_mesh
-
-func _ready() -> void:
-	if (flare_settings):
-			multimesh = _create_flare_multimesh()
+			vis_mode = VisMode.NOT_VISIBLE

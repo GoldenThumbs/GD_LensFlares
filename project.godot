@@ -11,9 +11,14 @@ config_version=5
 [application]
 
 config/name="Gd Lens Flares"
+run/main_scene="res://test.tscn"
 config/features=PackedStringArray("4.0", "Forward Plus")
 config/icon="res://icon.svg"
 
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/lensflares/plugin.cfg")
+
+[rendering]
+
+occlusion_culling/use_occlusion_culling=true

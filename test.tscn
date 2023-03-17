@@ -1,28 +1,41 @@
-[gd_scene load_steps=7 format=3 uid="uid://7qh8j4068sfr"]
+[gd_scene load_steps=6 format=3 uid="uid://7qh8j4068sfr"]
 
-[ext_resource type="Script" path="res://addons/lensflares/src/lens_flare.gd" id="1_la1sq"]
-[ext_resource type="QuadMesh" uid="uid://bb72fpae7c3ul" path="res://addons/lensflares/assets/quad.tres" id="2_epfj4"]
-[ext_resource type="Resource" uid="uid://g07exuu3no3u" path="res://addons/lensflares/assets/test_flare.tres" id="2_x8jps"]
-[ext_resource type="Material" uid="uid://bflgqax5iebaj" path="res://addons/lensflares/assets/flare.material" id="3_8fahw"]
+[ext_resource type="MultiMesh" uid="uid://7265b44ndan6" path="res://assets/test_flare.multimesh" id="1_3y6pu"]
+[ext_resource type="Script" path="res://addons/lensflares/src/lens_flare.gd" id="2_bq81h"]
 
-[sub_resource type="MultiMesh" id="MultiMesh_hiybj"]
-transform_format = 1
-use_colors = true
-use_custom_data = true
-instance_count = 2
-mesh = ExtResource("2_epfj4")
-buffer = PackedFloat32Array(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.5, 0.5, 0.25, 1, 0, 0, 1)
+[sub_resource type="BoxOccluder3D" id="BoxOccluder3D_3t8mb"]
+size = Vector3(3, 3, 1)
 
-[sub_resource type="QuadMesh" id="QuadMesh_bg0cx"]
+[sub_resource type="GDScript" id="GDScript_xbchm"]
+script/source = "extends OccluderInstance3D
+
+@export var travel_dist := 6.0
+var _side := true
+
+func _physics_process(delta: float) -> void:
+	translate(Vector3(delta * 3.0, 0.0, 0.0) * (2.0 * float(_side) - 1.0))
+	if (_side):
+		_side = position.x < travel_dist
+	else:
+		_side = -position.x > travel_dist
+"
+
+[sub_resource type="BoxMesh" id="BoxMesh_p7vsq"]
+size = Vector3(3, 3, 1)
 
 [node name="Node3D" type="Node3D"]
 
-[node name="LensFlare" type="MultiMeshInstance3D" parent="."]
-multimesh = SubResource("MultiMesh_hiybj")
-script = ExtResource("1_la1sq")
-flare_settings = ExtResource("2_x8jps")
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
-material_override = ExtResource("3_8fahw")
-mesh = SubResource("QuadMesh_bg0cx")
+[node name="OccluderInstance3D" type="OccluderInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+occluder = SubResource("BoxOccluder3D_3t8mb")
+script = SubResource("GDScript_xbchm")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="OccluderInstance3D"]
+mesh = SubResource("BoxMesh_p7vsq")
+
+[node name="LensFlare" type="VisibleOnScreenNotifier3D" parent="."]
+script = ExtResource("2_bq81h")
+flare_multimesh = ExtResource("1_3y6pu")
