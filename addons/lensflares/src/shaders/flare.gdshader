@@ -1,7 +1,9 @@
 shader_type spatial;
 render_mode cull_disabled, depth_test_disabled, depth_draw_never, blend_mix, unshaded, skip_vertex_transform;
 
+uniform vec4 modulate;
 uniform sampler2D sprite : source_color;
+uniform sampler2D depth_buffer : hint_depth_texture, repeat_disable, filter_nearest;
 uniform float spacing = 0.5;
 
 varying float fade_val;
@@ -10,7 +12,6 @@ void vertex()
 {
 	vec4 v_pos = VIEW_MATRIX * vec4(NODE_POSITION_WORLD, 1.0);
 	vec4 ss_pos = PROJECTION_MATRIX * v_pos;
-	ss_pos.z = 0.0;
 	if (ss_pos.w > 0.0)
 		ss_pos.xy /= ss_pos.w;
 	
@@ -45,7 +46,7 @@ void vertex()
 
 void fragment()
 {
-	vec4 color = texture(sprite, UV);
+	vec4 color = texture(sprite, UV) * modulate;
 	ALBEDO = color.rgb;
 	ALPHA *= color.a * fade_val;
 }

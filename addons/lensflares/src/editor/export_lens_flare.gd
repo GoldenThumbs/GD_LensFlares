@@ -2,20 +2,17 @@
 class_name ExportLensFlare
 extends EditorInspectorPlugin
 
-signal export_flare(flare_settings)
-
-var _flare_settings : FlareSettings
+signal export_flare(multimesh)
 
 func _can_handle(object: Object) -> bool:
-	return object is FlareSettings
+	var handled := object is FlareSettings
+	return handled
 
 func _parse_begin(object: Object) -> void:
-	var export_btn := Button.new()
-	export_btn.text = "Export as MultiMesh"
-	export_btn.connect("pressed", Callable(self, "_on_export_btn_pressed"))
-	add_custom_control(export_btn)
+	var viewer := FlareViewer.new(object as FlareSettings)
+	viewer.export_flare.connect(_emit_export_flare)
 	
-	_flare_settings = object as FlareSettings
+	add_custom_control(viewer)
 
-func _on_export_btn_pressed() -> void:
-	emit_signal("export_flare", _flare_settings)
+func _emit_export_flare(multimesh : MultiMesh) -> void:
+	export_flare.emit(multimesh)

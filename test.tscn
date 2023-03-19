@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://7qh8j4068sfr"]
+[gd_scene load_steps=7 format=3 uid="uid://7qh8j4068sfr"]
 
-[ext_resource type="MultiMesh" uid="uid://7265b44ndan6" path="res://assets/test_flare.multimesh" id="1_3y6pu"]
+[ext_resource type="Script" path="res://src/cam.gd" id="1_blv34"]
 [ext_resource type="Script" path="res://addons/lensflares/src/lens_flare.gd" id="2_bq81h"]
+[ext_resource type="MultiMesh" uid="uid://bi717wt1y4gn4" path="res://assets/test_flare.multimesh" id="3_ap8y4"]
 
 [sub_resource type="BoxOccluder3D" id="BoxOccluder3D_3t8mb"]
 size = Vector3(3, 3, 1)
@@ -27,6 +28,14 @@ size = Vector3(3, 3, 1)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8)
+script = ExtResource("1_blv34")
+
+[node name="LensFlare" type="VisibleOnScreenNotifier3D" parent="."]
+aabb = AABB(-0.05, -0.05, -0.05, 0.1, 0.1, 0.1)
+script = ExtResource("2_bq81h")
+flare_multimesh = ExtResource("3_ap8y4")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="LensFlare"]
 
 [node name="OccluderInstance3D" type="OccluderInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
@@ -35,7 +44,3 @@ script = SubResource("GDScript_xbchm")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="OccluderInstance3D"]
 mesh = SubResource("BoxMesh_p7vsq")
-
-[node name="LensFlare" type="VisibleOnScreenNotifier3D" parent="."]
-script = ExtResource("2_bq81h")
-flare_multimesh = ExtResource("1_3y6pu")

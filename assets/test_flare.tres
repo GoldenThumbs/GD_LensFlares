@@ -1,44 +1,52 @@
-[gd_resource type="Resource" script_class="FlareSettings" load_steps=8 format=3 uid="uid://de7bkaw01ld6g"]
+[gd_resource type="Resource" script_class="FlareSettings" load_steps=9 format=3 uid="uid://deglq2jk26lh7"]
 
-[ext_resource type="Script" path="res://addons/lensflares/src/editor/flare_segment.gd" id="1_3ep40"]
-[ext_resource type="Texture2D" uid="uid://b7nwkwhryxsv1" path="res://addons/lensflares/assets/lensflares_0.png" id="2_73dn8"]
+[ext_resource type="Script" path="res://addons/lensflares/src/editor/flare_segment.gd" id="1_esqhm"]
+[ext_resource type="Texture2D" uid="uid://lymjk1kd6ea" path="res://assets/flare_sheet.png" id="1_s6hog"]
 [ext_resource type="Script" path="res://addons/lensflares/src/editor/flare_settings.gd" id="3_f2re8"]
 
-[sub_resource type="Resource" id="Resource_nqlgv"]
-script = ExtResource("1_3ep40")
+[sub_resource type="Resource" id="Resource_bxh3g"]
+script = ExtResource("1_esqhm")
 rect = Rect2(0, 0, 512, 512)
 focal_fade = false
+scale = 1.5
+offset = 0.0
+rotate = false
+
+[sub_resource type="Resource" id="Resource_a5j7w"]
+script = ExtResource("1_esqhm")
+rect = Rect2(0, 512, 256, 256)
+focal_fade = true
 scale = 1.0
 offset = 0.0
 rotate = false
 
-[sub_resource type="Resource" id="Resource_6w8xj"]
-script = ExtResource("1_3ep40")
+[sub_resource type="Resource" id="Resource_stjw0"]
+script = ExtResource("1_esqhm")
 rect = Rect2(0, 512, 256, 256)
 focal_fade = true
 scale = 0.5
 offset = 0.0
 rotate = false
 
-[sub_resource type="Resource" id="Resource_a4mru"]
-script = ExtResource("1_3ep40")
-rect = Rect2(0, 768, 128, 128)
+[sub_resource type="Resource" id="Resource_p3ita"]
+script = ExtResource("1_esqhm")
+rect = Rect2(0, 512, 256, 256)
 focal_fade = true
 scale = 0.25
 offset = 0.0
 rotate = false
 
-[sub_resource type="Resource" id="Resource_mghv4"]
-script = ExtResource("1_3ep40")
+[sub_resource type="Resource" id="Resource_a3pil"]
+script = ExtResource("1_esqhm")
 rect = Rect2(256, 512, 256, 256)
 focal_fade = true
-scale = 0.5
+scale = 1.0
 offset = 0.0
 rotate = true
 
 [resource]
 script = ExtResource("3_f2re8")
-flare_tex = ExtResource("2_73dn8")
+flare_tex = ExtResource("1_s6hog")
 flare_color = Color(1, 1, 1, 1)
-flare_spacing = 0.6
-flare_segments = Array[ExtResource("1_3ep40")]([SubResource("Resource_nqlgv"), SubResource("Resource_6w8xj"), SubResource("Resource_a4mru"), SubResource("Resource_mghv4")])
+flare_spacing = 0.4
+flare_segments = Array[ExtResource("1_esqhm")]([SubResource("Resource_bxh3g"), SubResource("Resource_a5j7w"), SubResource("Resource_stjw0"), SubResource("Resource_p3ita"), SubResource("Resource_a3pil")])
