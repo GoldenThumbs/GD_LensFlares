@@ -15,18 +15,27 @@ extends VisibleOnScreenNotifier3D
 @export var raycast_occlusion := false
 
 var _vis_data := LensFlareVis.new()
-var _mmesh_inst : RID
+var _mmesh_inst := RID()
 
 func _enter_tree() -> void:
-	_vis_data.vis_data_calc(self)
 	_set_up_drawing()
+	_vis_data.vis_data_calc(self)
 
 func _exit_tree() -> void:
 	if (_mmesh_inst.is_valid()):
 		RenderingServer.free_rid(_mmesh_inst)
+		_mmesh_inst = RID()
 
 func _process(delta: float) -> void:
+	if (!_mmesh_inst.is_valid() || !flare_multimesh):
+		return
+	
 	var new_vis_data := LensFlareVis.new()
+	
+	if (!visible):
+		_vis_data = new_vis_data
+		return
+	
 	new_vis_data.vis_data_calc(self)
 	
 	if (!new_vis_data.is_behind):
@@ -69,17 +78,17 @@ class LensFlareVis extends RefCounted:
 	var is_visible := false
 	var is_behind := false
 	var vis_mode := VisMode.NOT_VISIBLE
-	var fade_val := 1.0
+	var fade_val := 0.0
 	
 	func vis_data_calc(flare : LensFlare) -> void:
-		if (!Engine.is_editor_hint()):
-			var cam := flare.get_viewport().get_camera_3d()
+		var cam := flare.get_viewport().get_camera_3d()
+		if (!Engine.is_editor_hint() && cam):
 			is_visible = flare.is_on_screen() && cam.is_position_in_frustum(flare.global_position)
+			is_behind = cam.is_position_behind(flare.global_position)
 			if (flare.raycast_occlusion):
 				var ray_query := PhysicsRayQueryParameters3D.create(cam.global_position, flare.global_position, flare.raycast_mask, [cam.get_camera_rid()])
 				var ray_empty := flare.get_world_3d().direct_space_state.intersect_ray(ray_query).is_empty()
 				is_visible = is_visible && ray_empty
-			is_behind = cam.is_position_behind(flare.global_position)
 		else:
 			is_visible = false
 			is_behind = true

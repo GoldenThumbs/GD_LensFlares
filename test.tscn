@@ -1,24 +1,32 @@
-[gd_scene load_steps=7 format=3 uid="uid://7qh8j4068sfr"]
+[gd_scene load_steps=8 format=3 uid="uid://7qh8j4068sfr"]
 
 [ext_resource type="Script" path="res://src/cam.gd" id="1_blv34"]
 [ext_resource type="Script" path="res://addons/lensflares/src/lens_flare.gd" id="2_bq81h"]
 [ext_resource type="MultiMesh" uid="uid://bi717wt1y4gn4" path="res://assets/test_flare.multimesh" id="3_ap8y4"]
+[ext_resource type="Script" path="res://src/move_linear.gd" id="4_6y2pd"]
 
 [sub_resource type="BoxOccluder3D" id="BoxOccluder3D_3t8mb"]
 size = Vector3(3, 3, 1)
 
-[sub_resource type="GDScript" id="GDScript_xbchm"]
+[sub_resource type="GDScript" id="GDScript_ltcu2"]
 script/source = "extends OccluderInstance3D
 
 @export var travel_dist := 6.0
+@export var travel_axis := Vector3(1, 0, 0)
 var _side := true
+var _origin := Vector3.ZERO
+var _travel := Vector3.ZERO
+
+func _ready() -> void:
+	_origin = position
 
 func _physics_process(delta: float) -> void:
-	translate(Vector3(delta * 3.0, 0.0, 0.0) * (2.0 * float(_side) - 1.0))
+	_travel += travel_axis * (delta * 3.0) * (2.0 * float(_side) - 1.0)
+	position = _origin + _travel
 	if (_side):
-		_side = position.x < travel_dist
+		_side = _travel.dot(travel_axis) < travel_dist
 	else:
-		_side = -position.x > travel_dist
+		_side = -_travel.dot(travel_axis) > travel_dist
 "
 
 [sub_resource type="BoxMesh" id="BoxMesh_p7vsq"]
@@ -26,21 +34,25 @@ size = Vector3(3, 3, 1)
 
 [node name="Node3D" type="Node3D"]
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8)
-script = ExtResource("1_blv34")
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+script = ExtResource("4_6y2pd")
+travel_speed = 6.0
+travel_dist = 4.0
+travel_axis = Vector3(0, 1, 0)
 
-[node name="LensFlare" type="VisibleOnScreenNotifier3D" parent="."]
+[node name="LensFlare" type="VisibleOnScreenNotifier3D" parent="OmniLight3D"]
 aabb = AABB(-0.05, -0.05, -0.05, 0.1, 0.1, 0.1)
 script = ExtResource("2_bq81h")
 flare_multimesh = ExtResource("3_ap8y4")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="LensFlare"]
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8)
+script = ExtResource("1_blv34")
 
 [node name="OccluderInstance3D" type="OccluderInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 occluder = SubResource("BoxOccluder3D_3t8mb")
-script = SubResource("GDScript_xbchm")
+script = SubResource("GDScript_ltcu2")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="OccluderInstance3D"]
 mesh = SubResource("BoxMesh_p7vsq")

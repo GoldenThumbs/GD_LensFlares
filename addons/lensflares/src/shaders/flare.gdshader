@@ -3,7 +3,6 @@ render_mode cull_disabled, depth_test_disabled, depth_draw_never, blend_mix, uns
 
 uniform vec4 modulate;
 uniform sampler2D sprite : source_color;
-uniform sampler2D depth_buffer : hint_depth_texture, repeat_disable, filter_nearest;
 uniform float spacing = 0.5;
 
 varying float fade_val;
