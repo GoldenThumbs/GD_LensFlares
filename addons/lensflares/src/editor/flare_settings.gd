@@ -65,7 +65,13 @@ func create_flare_multimesh() -> MultiMesh:
 		if (!f_seg):
 			continue
 		
-		m_mesh.set_instance_custom_data(i, Color(float(f_seg.focal_fade), f_seg.offset, float(f_seg.rotate), f_seg.scale))
+		var bool_bit := 0
+		if (f_seg.focal_fade):
+			bool_bit |= 1 << 0
+		if (f_seg.rotate):
+			bool_bit |= 1 << 1
+		
+		m_mesh.set_instance_custom_data(i, Color(float(bool_bit), f_seg.offset, f_seg.scale.x, f_seg.scale.y))
 		
 		var uv_offset := f_seg.rect.position / tex_res
 		var uv_scale := f_seg.rect.size / tex_res

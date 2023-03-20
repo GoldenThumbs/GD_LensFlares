@@ -4,49 +4,49 @@
 [ext_resource type="Texture2D" uid="uid://lymjk1kd6ea" path="res://assets/flare_sheet.png" id="1_s6hog"]
 [ext_resource type="Script" path="res://addons/lensflares/src/editor/flare_settings.gd" id="3_f2re8"]
 
-[sub_resource type="Resource" id="Resource_bxh3g"]
+[sub_resource type="Resource" id="Resource_4ng4a"]
 script = ExtResource("1_esqhm")
 rect = Rect2(0, 0, 512, 512)
 focal_fade = false
-scale = 1.5
+scale = Vector2(1.5, 1.5)
 offset = 0.0
 rotate = false
 
-[sub_resource type="Resource" id="Resource_a5j7w"]
+[sub_resource type="Resource" id="Resource_k3m58"]
 script = ExtResource("1_esqhm")
 rect = Rect2(0, 512, 256, 256)
 focal_fade = true
-scale = 1.0
-offset = 0.0
-rotate = false
+scale = Vector2(0.25, 0.25)
+offset = 1.0
+rotate = true
 
-[sub_resource type="Resource" id="Resource_stjw0"]
+[sub_resource type="Resource" id="Resource_11ym3"]
 script = ExtResource("1_esqhm")
 rect = Rect2(0, 512, 256, 256)
 focal_fade = true
-scale = 0.5
-offset = 0.0
-rotate = false
+scale = Vector2(0.5, 0.5)
+offset = 1.25
+rotate = true
 
-[sub_resource type="Resource" id="Resource_p3ita"]
+[sub_resource type="Resource" id="Resource_0f8tr"]
 script = ExtResource("1_esqhm")
 rect = Rect2(0, 512, 256, 256)
 focal_fade = true
-scale = 0.25
-offset = 0.0
-rotate = false
+scale = Vector2(1, 1)
+offset = 1.75
+rotate = true
 
-[sub_resource type="Resource" id="Resource_a3pil"]
+[sub_resource type="Resource" id="Resource_n2rrw"]
 script = ExtResource("1_esqhm")
 rect = Rect2(256, 512, 256, 256)
 focal_fade = true
-scale = 1.0
-offset = 0.0
+scale = Vector2(2, 2)
+offset = 2.5
 rotate = true
 
 [resource]
 script = ExtResource("3_f2re8")
 flare_tex = ExtResource("1_s6hog")
 flare_color = Color(1, 1, 1, 1)
-flare_spacing = 0.4
-flare_segments = Array[ExtResource("1_esqhm")]([SubResource("Resource_bxh3g"), SubResource("Resource_a5j7w"), SubResource("Resource_stjw0"), SubResource("Resource_p3ita"), SubResource("Resource_a3pil")])
+flare_spacing = 0.55
+flare_segments = Array[ExtResource("1_esqhm")]([SubResource("Resource_4ng4a"), SubResource("Resource_k3m58"), SubResource("Resource_11ym3"), SubResource("Resource_0f8tr"), SubResource("Resource_n2rrw")])

@@ -1,9 +1,22 @@
-[gd_scene load_steps=8 format=3 uid="uid://7qh8j4068sfr"]
+[gd_scene load_steps=11 format=3 uid="uid://7qh8j4068sfr"]
 
 [ext_resource type="Script" path="res://src/cam.gd" id="1_blv34"]
 [ext_resource type="Script" path="res://addons/lensflares/src/lens_flare.gd" id="2_bq81h"]
 [ext_resource type="MultiMesh" uid="uid://bi717wt1y4gn4" path="res://assets/test_flare.multimesh" id="3_ap8y4"]
 [ext_resource type="Script" path="res://src/move_linear.gd" id="4_6y2pd"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_nwpby"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_dctwn"]
+sky_material = SubResource("ProceduralSkyMaterial_nwpby")
+
+[sub_resource type="Environment" id="Environment_jy1em"]
+background_mode = 2
+sky = SubResource("Sky_dctwn")
+tonemap_mode = 2
+glow_enabled = true
 
 [sub_resource type="BoxOccluder3D" id="BoxOccluder3D_3t8mb"]
 size = Vector3(3, 3, 1)
@@ -33,6 +46,9 @@ func _physics_process(delta: float) -> void:
 size = Vector3(3, 3, 1)
 
 [node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_jy1em")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 script = ExtResource("4_6y2pd")

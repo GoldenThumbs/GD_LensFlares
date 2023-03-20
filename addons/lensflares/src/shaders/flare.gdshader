@@ -14,13 +14,31 @@ void vertex()
 	if (ss_pos.w > 0.0)
 		ss_pos.xy /= ss_pos.w;
 	
-	if (int(INSTANCE_CUSTOM.b) == 1)
+	vec2 ss_offset = ss_pos.xy + INSTANCE_CUSTOM.g * spacing * -ss_pos.xy;
+	
+	int booleans = int(INSTANCE_CUSTOM.r);
+	bool b_fade = bool(booleans & (1 << 0));
+	bool b_rot = bool(booleans & (1 << 1));
+	
+	VERTEX.xy *= INSTANCE_CUSTOM.ba;
+	
+	float node_dist = length(ss_pos.xy);
+	
+	if (b_rot)
 	{
 		float angle = atan(-v_pos.y, -v_pos.x);
+		
 		vec2 dir = vec2(cos(angle), sin(angle));
+		
+		VERTEX.x *= 1.0 - min(node_dist * 0.5, 1.0);
 		VERTEX.xy = vec2(
 			dir.x*VERTEX.x + dir.y*VERTEX.y,
 			dir.x*VERTEX.y - dir.y*VERTEX.x );
+		
+		//vec2 dir = vec2(cos(angle), sin(angle));
+		//VERTEX.xy = vec2(
+		//	dir.x*VERTEX.x + dir.y*VERTEX.y,
+		//	dir.x*VERTEX.y - dir.y*VERTEX.x );
 	}
 	
 	vec4 ss_vrt = PROJECTION_MATRIX * vec4(VERTEX, 1.0);
@@ -30,12 +48,10 @@ void vertex()
 	ss_vrt.y *= -1.0;
 	
 	fade_val = 1.0;
-	if (int(INSTANCE_CUSTOM.r) == 1)
-		fade_val *= min(length(ss_pos.xy) * 0.5, 1.0);
+	if (b_fade)
+		fade_val *= min(node_dist * 0.5, 1.0);
 	
-	ss_vrt.xy *= INSTANCE_CUSTOM.a;
-	
-	VERTEX.xy = ss_vrt.xy + ss_pos.xy + (float(INSTANCE_ID) + INSTANCE_CUSTOM.g) * spacing * -ss_pos.xy;
+	VERTEX.xy = ss_vrt.xy + ss_offset;
 	
 	POSITION = vec4(VERTEX.xyz, 1.0);
 	
