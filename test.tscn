@@ -1,9 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://7qh8j4068sfr"]
+[gd_scene load_steps=10 format=3 uid="uid://7qh8j4068sfr"]
 
 [ext_resource type="Script" path="res://src/cam.gd" id="1_blv34"]
 [ext_resource type="Script" path="res://addons/lensflares/src/lens_flare.gd" id="2_bq81h"]
-[ext_resource type="MultiMesh" uid="uid://bi717wt1y4gn4" path="res://assets/test_flare.multimesh" id="3_ap8y4"]
-[ext_resource type="Script" path="res://src/move_linear.gd" id="4_6y2pd"]
+[ext_resource type="MultiMesh" uid="uid://ckquwgvl1wdsc" path="res://assets/test_flare.multimesh" id="3_ap8y4"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_nwpby"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -51,14 +50,11 @@ size = Vector3(3, 3, 1)
 environment = SubResource("Environment_jy1em")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
-script = ExtResource("4_6y2pd")
-travel_speed = 6.0
-travel_dist = 4.0
-travel_axis = Vector3(0, 1, 0)
 
 [node name="LensFlare" type="VisibleOnScreenNotifier3D" parent="OmniLight3D"]
 aabb = AABB(-0.05, -0.05, -0.05, 0.1, 0.1, 0.1)
 script = ExtResource("2_bq81h")
+flare_view_dist = null
 flare_multimesh = ExtResource("3_ap8y4")
 
 [node name="Camera3D" type="Camera3D" parent="."]

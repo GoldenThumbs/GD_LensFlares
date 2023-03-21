@@ -70,6 +70,8 @@ func create_flare_multimesh() -> MultiMesh:
 			bool_bit |= 1 << 0
 		if (f_seg.rotate):
 			bool_bit |= 1 << 1
+		if (f_seg.focal_scale):
+			bool_bit |= 1 << 2
 		
 		m_mesh.set_instance_custom_data(i, Color(float(bool_bit), f_seg.offset, f_seg.scale.x, f_seg.scale.y))
 		

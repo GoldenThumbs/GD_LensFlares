@@ -14,6 +14,12 @@ extends Resource
 		emit_changed()
 	get:
 		return focal_fade
+@export var focal_scale : bool = true :
+	set(value):
+		focal_scale = value
+		emit_changed()
+	get:
+		return focal_scale
 @export var scale : Vector2 = Vector2.ONE :
 	set(value):
 		scale = value

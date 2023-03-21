@@ -3,6 +3,7 @@ class_name LensFlare
 extends VisibleOnScreenNotifier3D
 
 @export var flare_fade_speed := 6.0
+@export var flare_view_dist := 35.0
 @export var flare_multimesh : MultiMesh :
 	set(value):
 		flare_multimesh = value
@@ -34,6 +35,8 @@ func _process(delta: float) -> void:
 	
 	if (!visible):
 		_vis_data = new_vis_data
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_set_visible(_mmesh_inst, false)
 		return
 	
 	new_vis_data.vis_data_calc(self)
@@ -83,7 +86,10 @@ class LensFlareVis extends RefCounted:
 	func vis_data_calc(flare : LensFlare) -> void:
 		var cam := flare.get_viewport().get_camera_3d()
 		if (!Engine.is_editor_hint() && cam):
-			is_visible = flare.is_on_screen() && cam.is_position_in_frustum(flare.global_position)
+			var dist := cam.global_position.distance_to(flare.global_position)
+			var in_dist := dist <= flare.flare_view_dist
+			
+			is_visible = flare.is_on_screen() && in_dist && cam.is_position_in_frustum(flare.global_position)
 			is_behind = cam.is_position_behind(flare.global_position)
 			if (flare.raycast_occlusion):
 				var ray_query := PhysicsRayQueryParameters3D.create(cam.global_position, flare.global_position, flare.raycast_mask, [cam.get_camera_rid()])
