@@ -4,6 +4,27 @@ extends VisibleOnScreenNotifier3D
 
 @export var flare_fade_speed := 6.0
 @export var flare_view_dist := 35.0
+@export var flare_fade_start := 1.0 :
+	set(value):
+		flare_fade_start = value
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "proximity_fade", Vector2(flare_fade_start, 1.0 / flare_fade_dist))
+	get:
+		return flare_fade_start
+@export var flare_fade_dist := 2.0 :
+	set(value):
+		flare_fade_dist = value
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "proximity_fade", Vector2(flare_fade_start, 1.0 / flare_fade_dist))
+	get:
+		return flare_fade_dist
+@export var flare_light_color := Color.WHITE :
+	set(value):
+		flare_light_color = value
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "light_color", flare_light_color)
+	get:
+		return flare_light_color
 @export var flare_multimesh : MultiMesh :
 	set(value):
 		flare_multimesh = value
@@ -69,6 +90,8 @@ func _set_up_drawing() -> void:
 		RenderingServer.instance_set_ignore_culling(_mmesh_inst, true)
 		RenderingServer.instance_set_scenario(_mmesh_inst, get_world_3d().scenario)
 		RenderingServer.instance_set_transform(_mmesh_inst, global_transform)
+		RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "proximity_fade", Vector2(flare_fade_start, 1.0 / flare_fade_dist))
+		RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "light_color", flare_light_color)
 
 class LensFlareVis extends RefCounted:
 	enum VisMode {

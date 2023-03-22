@@ -50,11 +50,11 @@ size = Vector3(3, 3, 1)
 environment = SubResource("Environment_jy1em")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
 [node name="LensFlare" type="VisibleOnScreenNotifier3D" parent="OmniLight3D"]
 aabb = AABB(-0.05, -0.05, -0.05, 0.1, 0.1, 0.1)
 script = ExtResource("2_bq81h")
-flare_view_dist = null
 flare_multimesh = ExtResource("3_ap8y4")
 
 [node name="Camera3D" type="Camera3D" parent="."]

@@ -1,9 +1,11 @@
 shader_type spatial;
-render_mode cull_disabled, depth_test_disabled, depth_draw_never, blend_add, unshaded, skip_vertex_transform;
+render_mode depth_test_disabled, depth_draw_never, blend_add, unshaded, skip_vertex_transform;
 
-uniform vec4 modulate;
-uniform sampler2D sprite : source_color;
+uniform vec4 modulate : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform sampler2D sprite : source_color, hint_default_white;
 uniform float spacing = 0.5;
+instance uniform vec4 light_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+instance uniform vec2 proximity_fade = vec2(1.0, 2.0);
 
 varying float fade_val;
 
@@ -29,7 +31,7 @@ void vertex()
 	if (b_rot || b_scale)
 	{
 		float angle = atan(-v_pos.y, -v_pos.x);
-		dir = vec2(cos(-angle), sin(-angle));
+		dir = vec2(cos(angle), sin(angle));
 	}
 	
 	if (b_rot)
@@ -54,9 +56,7 @@ void vertex()
 	if (ss_vrt.w > 0.0)
 		ss_vrt.xy /= ss_vrt.w;
 	
-	ss_vrt.y *= -1.0;
-	
-	fade_val = 1.0;
+	fade_val = clamp((-v_pos.z - proximity_fade.x) * proximity_fade.y, 0.0, 1.0);
 	if (b_fade)
 		fade_val *= min(node_dist * 0.5, 1.0);
 	
@@ -70,7 +70,7 @@ void vertex()
 
 void fragment()
 {
-	vec4 color = texture(sprite, UV) * modulate;
+	vec4 color = texture(sprite, UV) * modulate * light_color;
 	ALBEDO = color.rgb;
 	ALPHA *= color.a * fade_val;
 }
