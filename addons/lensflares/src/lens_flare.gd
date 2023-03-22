@@ -1,30 +1,129 @@
 @tool
 class_name LensFlare
-extends Node3D
+extends VisibleOnScreenNotifier3D
 
-@export var flare_properties : FlareProperties
-@export var flare_spacing : float = 0.2
-@export var flare_scale : float = 1.0
-@export var flare_distance_scale := false
+@export var flare_fade_speed := 6.0
+@export var flare_view_dist := 35.0
+@export var flare_fade_start := 1.0 :
+	set(value):
+		flare_fade_start = value
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "proximity_fade", Vector2(flare_fade_start, 1.0 / flare_fade_dist))
+	get:
+		return flare_fade_start
+@export var flare_fade_dist := 2.0 :
+	set(value):
+		flare_fade_dist = value
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "proximity_fade", Vector2(flare_fade_start, 1.0 / flare_fade_dist))
+	get:
+		return flare_fade_dist
+@export var flare_light_color := Color.WHITE :
+	set(value):
+		flare_light_color = value
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "light_color", flare_light_color)
+	get:
+		return flare_light_color
+@export var flare_multimesh : MultiMesh :
+	set(value):
+		flare_multimesh = value
+		if (is_inside_tree()):
+			if (flare_multimesh && _mmesh_inst.is_valid()):
+				RenderingServer.instance_set_base(_mmesh_inst, flare_multimesh.get_rid())
+			_set_up_drawing()
+@export_group("Raycast Occlusion", "raycast_")
+@export_flags_3d_render var raycast_mask := 0xFFFFFFFF
+@export var raycast_occlusion := false
 
-var _flare_capture : LensFlareCapture
+var _vis_data := LensFlareVis.new()
+var _mmesh_inst := RID()
 
 func _enter_tree() -> void:
-	_flare_capture = get_tree().get_first_node_in_group("flare_capture") as LensFlareCapture
+	_set_up_drawing()
+	_vis_data.vis_data_calc(self)
 
 func _exit_tree() -> void:
-	_flare_capture = null
+	if (_mmesh_inst.is_valid()):
+		RenderingServer.free_rid(_mmesh_inst)
+		_mmesh_inst = RID()
 
-func _ready() -> void:
-	if (_flare_capture && visible):
-		_flare_capture.add_flare(self)
+func _process(delta: float) -> void:
+	if (!_mmesh_inst.is_valid() || !flare_multimesh):
+		return
+	
+	var new_vis_data := LensFlareVis.new()
+	
+	if (!visible):
+		_vis_data = new_vis_data
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_set_visible(_mmesh_inst, false)
+		return
+	
+	new_vis_data.vis_data_calc(self)
+	
+	if (!new_vis_data.is_behind):
+		if (new_vis_data.is_visible):
+			if (!_vis_data.is_visible || _vis_data.fade_val < 1.0):
+				new_vis_data.vis_mode = LensFlareVis.VisMode.FADING_IN
+				if (new_vis_data.vis_mode != _vis_data.vis_mode && _mmesh_inst.is_valid()):
+					RenderingServer.instance_set_visible(_mmesh_inst, true)
+				new_vis_data.fade_val = move_toward(_vis_data.fade_val, 1.0, delta * flare_fade_speed)
+		else:
+			if (_vis_data.is_visible || _vis_data.fade_val > 0.0):
+				new_vis_data.vis_mode = LensFlareVis.VisMode.FADING_OUT
+				new_vis_data.fade_val = move_toward(_vis_data.fade_val, 0.0, delta * flare_fade_speed)
+			elif (_mmesh_inst.is_valid()):
+				RenderingServer.instance_set_visible(_mmesh_inst, false)
+		if (_mmesh_inst.is_valid()):
+			RenderingServer.instance_set_transform(_mmesh_inst, global_transform)
+			RenderingServer.instance_geometry_set_transparency(_mmesh_inst, 1.0 - new_vis_data.fade_val)
+	elif (_mmesh_inst.is_valid()):
+		RenderingServer.instance_set_visible(_mmesh_inst, false)
+	_vis_data = new_vis_data
 
-func show() -> void:
-	super()
-	if (_flare_capture):
-		_flare_capture.add_flare(self)
+func _set_up_drawing() -> void:
+	if (!_mmesh_inst.is_valid()):
+		_mmesh_inst = RenderingServer.instance_create()
+		if (flare_multimesh):
+			RenderingServer.instance_set_base(_mmesh_inst, flare_multimesh.get_rid())
+		RenderingServer.instance_set_ignore_culling(_mmesh_inst, true)
+		RenderingServer.instance_set_scenario(_mmesh_inst, get_world_3d().scenario)
+		RenderingServer.instance_set_transform(_mmesh_inst, global_transform)
+		RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "proximity_fade", Vector2(flare_fade_start, 1.0 / flare_fade_dist))
+		RenderingServer.instance_geometry_set_shader_parameter(_mmesh_inst, "light_color", flare_light_color)
 
-func hide() -> void:
-	super()
-	if (_flare_capture):
-		_flare_capture.remove_flare(self)
+class LensFlareVis extends RefCounted:
+	enum VisMode {
+		NOT_VISIBLE = 0,
+		IS_VISIBLE,
+		FADING_IN,
+		FADING_OUT
+	}
+	
+	var is_visible := false
+	var is_behind := false
+	var vis_mode := VisMode.NOT_VISIBLE
+	var fade_val := 0.0
+	
+	func vis_data_calc(flare : LensFlare) -> void:
+		var cam := flare.get_viewport().get_camera_3d()
+		if (!Engine.is_editor_hint() && cam):
+			var dist := cam.global_position.distance_to(flare.global_position)
+			var in_dist := dist <= flare.flare_view_dist
+			
+			is_visible = flare.is_on_screen() && in_dist && cam.is_position_in_frustum(flare.global_position)
+			is_behind = cam.is_position_behind(flare.global_position)
+			if (flare.raycast_occlusion):
+				var ray_query := PhysicsRayQueryParameters3D.create(cam.global_position, flare.global_position, flare.raycast_mask, [cam.get_camera_rid()])
+				var ray_empty := flare.get_world_3d().direct_space_state.intersect_ray(ray_query).is_empty()
+				is_visible = is_visible && ray_empty
+		else:
+			is_visible = false
+			is_behind = true
+		fade_val = float(is_visible)
+		
+		if (is_visible):
+			vis_mode = VisMode.IS_VISIBLE
+		else:
+			vis_mode = VisMode.NOT_VISIBLE
